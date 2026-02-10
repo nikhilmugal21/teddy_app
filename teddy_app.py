@@ -13,13 +13,13 @@ GIRL_NAME = "Manya"
 SECRET_PASSWORD = "meow"  # her nickname (case-insensitive match)
 NOTE_TEXT = (
     "You have this unfair ability to distract me without even trying. Just like how I easily get distracted by cats."
-    "Just a little reminder: you’re adorable, you’re loved, and you make my world loveable. "
+    "Just a little reminder: you’re adorable, you’re loved, and you make my world loveable."
     "If I were there right now, I’d steal your attention, keep you close,\n"
     "and remind you exactly how adorable you are.\n\n"
     "Come here 🧸💋\n"
     "Your teddy isn’t the only one sending kisses tonight."
 )
-TEDDY_GIF_URL = "https://tenor.com/en-IN/view/loveyou-ted-teddybear-kiss-blowkiss-gif-16881826811022866158"
+TEDDY_GIF_URL = "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
 # ==============================
 
 HTML = f"""<!DOCTYPE html>
@@ -400,11 +400,21 @@ HTML = f"""<!DOCTYPE html>
 
       if (pwd) pwd.value = "";
       if (noteArea) noteArea.hidden = true;
-      if (hint) hint.textContent = "Hint: it’s short & cute 👀";
 
-      showToast("Say the magic nickname… 🔒");
-      setTimeout(() => pwd?.focus?.(), 50);
-    }}
+      // 👇 start with no hint
+      if (hint) hint.textContent = "";
+
+      // 👇 delayed hint (2 seconds)
+      setTimeout(() => {
+        if (hint) {
+          hint.textContent = "Hint: I call you this when you act extra cute 😼";
+        }
+  }, 2000);
+
+  showToast("Say the magic nickname… 🔒");
+  setTimeout(() => pwd?.focus?.(), 50);
+}
+
 
     function closeModal() {{
       modal.classList.remove("show");
