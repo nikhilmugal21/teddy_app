@@ -22,7 +22,7 @@ NOTE_TEXT = (
 TEDDY_GIF_URL = "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
 # ==============================
 
-HTML = f"""<!DOCTYPE html>
+HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -329,9 +329,14 @@ HTML = f"""<!DOCTYPE html>
 
   <script>
     // ====== Personalize from Python ======
-    const GIRL_NAME = {GIRL_NAME!r};
-    const SECRET_PASSWORD = {SECRET_PASSWORD!r};
-    const NOTE_TEXT = {NOTE_TEXT!r};
+    const GIRL_NAME = "Manya";
+    const SECRET_PASSWORD = "meow";
+    const NOTE_TEXT = "You have this unfair ability to distract me without even trying. Just like how I easily get distracted by cats."
+    "Just a little reminder: you’re adorable, you’re loved, and you make my world loveable."
+    "If I were there right now, I’d steal your attention, keep you close,"
+    "and remind you exactly how adorable you are."
+    "Come here 🧸💋"
+    "Your teddy isn’t the only one sending kisses tonight.";
     // ==============================
 
     const el = (id) => document.getElementById(id);
@@ -408,8 +413,8 @@ HTML = f"""<!DOCTYPE html>
       setTimeout(() => {
         if (hint) {{
           hint.textContent = "Hint: I call you this when you act extra cute 😼";
-        }
-  }, 2000);
+        }}
+    , 2000);
 
   showToast("Say the magic nickname… 🔒");
   setTimeout(() => pwd?.focus?.(), 50);
