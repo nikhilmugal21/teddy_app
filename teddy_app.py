@@ -19,7 +19,7 @@ NOTE_TEXT = (
     "Come here 🧸💋\n"
     "Your teddy isn’t the only one sending kisses tonight."
 )
-TEDDY_GIF_URL = "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
+TEDDY_GIF_URL = "https://media1.tenor.com/m/2QbMJ6FR9TQAAAAd/loveyou-ted.gif"
 # ==============================
 
 HTML = """<!DOCTYPE html>
@@ -107,9 +107,13 @@ HTML = """<!DOCTYPE html>
       -webkit-background-clip:text; background-clip:text; color:transparent;
       font-weight:800;
     }
-    .teddy-wrap{display:flex; align-items:center; justify-content:center; padding:14px 0 6px;}
+    .teddy-wrap{display:flex; align-items:center; justify-content:center; padding:14px 0 6px; width:100%;}
     .teddy{
-      width:min(310px, 78vw); height:auto;
+      width:min(340px, 82vw);
+      max-height: 360px;
+      height:auto;
+      object-fit: contain;
+      background: rgba(255,255,255,0.35);
       border-radius: 24px; border:1px solid rgba(255,255,255,0.55);
       box-shadow: 0 18px 40px rgba(31,26,43,.18);
       transform-origin:center; transition: transform .22s ease;
@@ -260,7 +264,7 @@ HTML = """<!DOCTYPE html>
       </p>
 
       <div class="teddy-wrap">
-        <img id="teddyGif" class="teddy" src="{TEDDY_GIF_URL}" alt="Teddy sending flying kisses" />
+        <img id="teddyGif" class="teddy" src="{TEDDY_GIF_URL}" alt="Teddy sending flying kisses" onerror="this.onerror=null;this.src='https://media1.tenor.com/m/2QbMJ6FR9TQAAAAd/loveyou-ted.gif';" />
       </div>
 
       <div class="stats">
