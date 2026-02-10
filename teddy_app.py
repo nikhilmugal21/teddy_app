@@ -55,7 +55,7 @@ HTML = """<!DOCTYPE html>
     .b1{width:380px;height:380px;left:-120px;top:10%;background:#ff8bc7;animation-duration:12s}
     .b2{width:420px;height:420px;right:-160px;top:5%;background:#7be7ff;animation-duration:14s}
     .b3{width:460px;height:460px;left:20%;bottom:-220px;background:#b8a6ff;animation-duration:16s}
-    @keyframes float{0%,100%{transform: translate(0,0) scale(1)} 50%{transform: translate(18px,-18px) scale(1.05)}
+    @keyframes float{0%,100%{transform: translate(0,0) scale(1)} 50%{transform: translate(18px,-18px) scale(1.05)}}
 
     .shell{
       position:relative; z-index:1; min-height:100%;
@@ -209,7 +209,7 @@ HTML = """<!DOCTYPE html>
       animation: bob 1.2s ease-in-out infinite;
       user-select:none;
     }
-    @keyframes bob{0%,100%{transform: translate(-50%,-50%)} 50%{transform: translate(-50%,-56%)}
+    @keyframes bob{0%,100%{transform: translate(-50%,-50%)} 50%{transform: translate(-50%,-56%)}}
 
     /* Password lock UI */
     .lock{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
@@ -231,7 +231,7 @@ HTML = """<!DOCTYPE html>
     .hintline{margin-top: 10px; text-align:left;}
     .note-area{margin-top:6px;}
     .shake{animation: shake .32s ease-in-out;}
-    @keyframes shake{0%,100%{transform: translateX(0)} 25%{transform: translateX(-6px)} 50%{transform: translateX(6px)} 75%{transform: translateX(-4px)}
+    @keyframes shake{0%,100%{transform: translateX(0)} 25%{transform: translateX(-6px)} 50%{transform: translateX(6px)} 75%{transform: translateX(-4px)}}
   </style>
 </head>
 
