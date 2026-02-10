@@ -406,7 +406,7 @@ HTML = f"""<!DOCTYPE html>
 
       // 👇 delayed hint (2 seconds)
       setTimeout(() => {
-        if (hint) {
+        if (hint) {{
           hint.textContent = "Hint: I call you this when you act extra cute 😼";
         }
   }, 2000);
