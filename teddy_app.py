@@ -1,28 +1,31 @@
-# app.py
-# pip install flask
-# run: python app.py
-# open: http://127.0.0.1:5000
+# teddy_app.py
+# pip install flask gunicorn
+# Local run: python teddy_app.py  -> http://127.0.0.1:5000
+# Render start command: gunicorn teddy_app:app
 
 from flask import Flask, Response
 import os
+import json
 
 app = Flask(__name__)
 
 # ====== PERSONALIZE HERE ======
 GIRL_NAME = "Manya"
-SECRET_PASSWORD = "meow"  # her nickname (case-insensitive match)
+SECRET_PASSWORD = "meow"  # case-insensitive
 NOTE_TEXT = (
-    "You have this unfair ability to distract me without even trying. Just like how I easily get distracted by cats."
-    "Just a little reminder: you’re adorable, you’re loved, and you make my world loveable."
+    "You have this unfair ability to distract me without even trying. Just like how I easily get distracted by cats.\n\n"
+    "Just a little reminder: you’re adorable, you’re loved, and you make my world loveable.\n"
     "If I were there right now, I’d steal your attention, keep you close,\n"
     "and remind you exactly how adorable you are.\n\n"
     "Come here 🧸💋\n"
     "Your teddy isn’t the only one sending kisses tonight."
 )
+
+# Use a *direct* image URL (ends with .gif). Tenor page links won't work in <img src="...">
 TEDDY_GIF_URL = "https://media1.tenor.com/m/2QbMJ6FR9TQAAAAd/loveyou-ted.gif"
 # ==============================
 
-HTML = """<!DOCTYPE html>
+HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -55,7 +58,10 @@ HTML = """<!DOCTYPE html>
     .b1{width:380px;height:380px;left:-120px;top:10%;background:#ff8bc7;animation-duration:12s}
     .b2{width:420px;height:420px;right:-160px;top:5%;background:#7be7ff;animation-duration:14s}
     .b3{width:460px;height:460px;left:20%;bottom:-220px;background:#b8a6ff;animation-duration:16s}
-    @keyframes float{0%,100%{transform: translate(0,0) scale(1)} 50%{transform: translate(18px,-18px) scale(1.05)}}
+    @keyframes float{
+      0%,100%{transform: translate(0,0) scale(1)}
+      50%{transform: translate(18px,-18px) scale(1.05)}
+    }
 
     .shell{
       position:relative; z-index:1; min-height:100%;
@@ -107,17 +113,27 @@ HTML = """<!DOCTYPE html>
       -webkit-background-clip:text; background-clip:text; color:transparent;
       font-weight:800;
     }
-    .teddy-wrap{display:flex; align-items:center; justify-content:center; padding:14px 0 6px; width:100%;}
-    .teddy{
+    .teddy-wrap{display:flex; align-items:center; justify-content:center; padding:14px 0 6px;}
+    .teddy-frame{
       width:min(340px, 82vw);
-      max-height: 360px;
+      border-radius: 26px;
+      background: rgba(255,255,255,0.55);
+      border:1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 18px 40px rgba(31,26,43,.16);
+      padding:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .teddy{
+      width:100%;
+      max-width: 300px;
       height:auto;
-      object-fit: contain;
-      background: rgba(255,255,255,0.35);
-      border-radius: 24px; border:1px solid rgba(255,255,255,0.55);
-      box-shadow: 0 18px 40px rgba(31,26,43,.18);
-      transform-origin:center; transition: transform .22s ease;
+      border-radius: 20px;
+      display:block;
       user-select:none;
+      transform-origin:center;
+      transition: transform .22s ease;
     }
     .teddy.shy{transform: scale(.98) rotate(-1.2deg)}
     .teddy.kiss{transform: scale(1.02) rotate(1deg)}
@@ -168,7 +184,7 @@ HTML = """<!DOCTYPE html>
       position:relative;
     }
     .close{position:absolute; right:14px; top:14px;}
-    .note{color:var(--muted); line-height:1.55; margin:10px 0 16px;}
+    .note{color:var(--muted); line-height:1.55; margin:10px 0 16px; white-space:pre-wrap;}
     .modal-actions{display:flex; gap:12px; flex-wrap:wrap;}
     .tiny{margin:12px 0 0; font-size:12px; color:var(--muted);}
 
@@ -213,7 +229,10 @@ HTML = """<!DOCTYPE html>
       animation: bob 1.2s ease-in-out infinite;
       user-select:none;
     }
-    @keyframes bob{0%,100%{transform: translate(-50%,-50%)} 50%{transform: translate(-50%,-56%)}}
+    @keyframes bob{
+      0%,100%{transform: translate(-50%,-50%)}
+      50%{transform: translate(-50%,-56%)}
+    }
 
     /* Password lock UI */
     .lock{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
@@ -232,10 +251,24 @@ HTML = """<!DOCTYPE html>
       border-color: rgba(107,91,255,0.55);
       box-shadow: 0 16px 38px rgba(31,26,43,.14);
     }
-    .hintline{margin-top: 10px; text-align:left;}
+    .hintline{
+      margin-top: 10px;
+      text-align:left;
+      font-weight:800;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(107,91,255,0.10);
+      border: 1px solid rgba(107,91,255,0.18);
+      min-height: 20px;
+    }
     .note-area{margin-top:6px;}
     .shake{animation: shake .32s ease-in-out;}
-    @keyframes shake{0%,100%{transform: translateX(0)} 25%{transform: translateX(-6px)} 50%{transform: translateX(6px)} 75%{transform: translateX(-4px)}}
+    @keyframes shake{
+      0%,100%{transform: translateX(0)}
+      25%{transform: translateX(-6px)}
+      50%{transform: translateX(6px)}
+      75%{transform: translateX(-4px)}
+    }
   </style>
 </head>
 
@@ -264,7 +297,9 @@ HTML = """<!DOCTYPE html>
       </p>
 
       <div class="teddy-wrap">
-        <img id="teddyGif" class="teddy" src="{TEDDY_GIF_URL}" alt="Teddy sending flying kisses" onerror="this.onerror=null;this.src='https://media1.tenor.com/m/2QbMJ6FR9TQAAAAd/loveyou-ted.gif';" />
+        <div class="teddy-frame">
+          <img id="teddyGif" class="teddy" src="__TEDDY_GIF__" alt="Teddy sending flying kisses" />
+        </div>
       </div>
 
       <div class="stats">
@@ -298,7 +333,7 @@ HTML = """<!DOCTYPE html>
       <button id="closeModal" class="icon-btn close" aria-label="Close">×</button>
 
       <h2>One tiny secret first… 🔒</h2>
-      <p class="note" style="margin-top:8px">
+      <p class="note" style="margin-top:8px; white-space:normal">
         Enter your nickname (the one I call you) to unlock your surprise 💗
       </p>
 
@@ -308,7 +343,7 @@ HTML = """<!DOCTYPE html>
         <button id="unlockBtn" class="btn primary">Unlock 💞</button>
       </div>
 
-      <p id="pwdHint" class="tiny hintline">Hint: it’s short & cute 👀</p>
+      <p id="pwdHint" class="tiny hintline"></p>
 
       <div id="noteArea" class="note-area" hidden>
         <h2 style="margin-top:14px">For <span id="herName2" class="accent"></span> 💕</h2>
@@ -326,24 +361,15 @@ HTML = """<!DOCTYPE html>
 
   <div id="toast" class="toast" aria-live="polite"></div>
 
-  <!-- Optional: if you want music, host an mp3 and put its URL here -->
-  <audio id="bgm" preload="auto" loop>
-    <!-- example: <source src="/static/music.mp3" type="audio/mpeg" /> -->
-  </audio>
+  <audio id="bgm" preload="auto" loop></audio>
 
   <script>
-    // ====== Personalize from Python ======
-    const GIRL_NAME = "Manya";
-    const SECRET_PASSWORD = "meow";
-    const NOTE_TEXT = "You have this unfair ability to distract me without even trying. Just like how I easily get distracted by cats."
-    "Just a little reminder: you’re adorable, you’re loved, and you make my world loveable."
-    "If I were there right now, I’d steal your attention, keep you close,"
-    "and remind you exactly how adorable you are."
-    "Come here 🧸💋"
-    "Your teddy isn’t the only one sending kisses tonight.";
-    // ==============================
+    // Values injected by Flask (JSON strings)
+    const GIRL_NAME = __GIRL_NAME__;
+    const SECRET_PASSWORD = __SECRET_PASSWORD__;
+    const NOTE_TEXT = __NOTE_TEXT__;
 
-    const el = (id) => document.getElementById(id);
+    function el(id){ return document.getElementById(id); }
 
     const herName = el("herName");
     const herName2 = el("herName2");
@@ -360,38 +386,36 @@ HTML = """<!DOCTYPE html>
     let hearts = 0;
     let musicOn = false;
 
-    function setTextSafe(node, text) {
+    function setTextSafe(node, text){
       if (node) node.textContent = text;
     }
 
-    function showToast(msg) {
+    function showToast(msg){
       toast.textContent = msg;
       toast.classList.add("show");
       clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => toast.classList.remove("show"), 1400);
+      showToast._t = setTimeout(function(){ toast.classList.remove("show"); }, 1400);
     }
 
-    function rand(min, max) {
-      return Math.random() * (max - min) + min;
-    }
+    function rand(min, max){ return Math.random() * (max - min) + min; }
 
-    function popEmoji(x, y, emoji) {
+    function popEmoji(x, y, emoji){
       const s = document.createElement("div");
       s.className = "pop";
       s.textContent = emoji;
-      s.style.left = `${x}px`;
-      s.style.top = `${y}px`;
-      s.style.fontSize = `${rand(16, 28)}px`;
-      s.style.transform = `translate(-50%, -50%) rotate(${rand(-18, 18)}deg)`;
+      s.style.left = x + "px";
+      s.style.top = y + "px";
+      s.style.fontSize = rand(16, 28) + "px";
+      s.style.transform = "translate(-50%, -50%) rotate(" + rand(-18, 18) + "deg)";
       document.body.appendChild(s);
-      setTimeout(() => s.remove(), 1400);
+      setTimeout(function(){ s.remove(); }, 1400);
     }
 
-    function sprinkleLove(x, y) {
+    function sprinkleLove(x, y){
       const emojis = ["💗", "💖", "✨", "💞", "💘", "🌸"];
       const n = Math.floor(rand(3, 7));
-      for (let i = 0; i < n; i++) {
-        setTimeout(() => {
+      for (let i = 0; i < n; i++){
+        setTimeout(function(){
           popEmoji(x + rand(-18, 18), y + rand(-18, 18), emojis[Math.floor(rand(0, emojis.length))]);
         }, i * 60);
       }
@@ -399,7 +423,7 @@ HTML = """<!DOCTYPE html>
       heartsEl.textContent = String(hearts);
     }
 
-    function openModal() {
+    function openModal(){
       modal.classList.add("show");
       modal.setAttribute("aria-hidden", "false");
 
@@ -410,27 +434,22 @@ HTML = """<!DOCTYPE html>
       if (pwd) pwd.value = "";
       if (noteArea) noteArea.hidden = true;
 
-      // 👇 start with no hint
+      // delayed hint
       if (hint) hint.textContent = "";
+      setTimeout(function(){
+        if (hint) hint.textContent = "Hint: I call you this when you act extra cute 😼";
+      }, 2000);
 
-      // 👇 delayed hint (2 seconds)
-      setTimeout(() => {
-        if (hint) {
-          hint.textContent = "Hint: I call you this when you act extra cute 😼";
-        }
-    , 2000);
+      showToast("Say the magic nickname… 🔒");
+      setTimeout(function(){ if (pwd) pwd.focus(); }, 50);
+    }
 
-  showToast("Say the magic nickname… 🔒");
-  setTimeout(() => { if (pwd && typeof pwd.focus === 'function') pwd.focus(); }, 50);
-}
-
-
-    function closeModal() {
+    function closeModal(){
       modal.classList.remove("show");
       modal.setAttribute("aria-hidden", "true");
     }
 
-    function spawnKiss() {
+    function spawnKiss(){
       const k = document.createElement("button");
       k.className = "kiss";
       k.type = "button";
@@ -439,15 +458,15 @@ HTML = """<!DOCTYPE html>
 
       const x = rand(60, window.innerWidth - 60);
       const y = rand(120, window.innerHeight - 120);
-      k.style.left = `${x}px`;
-      k.style.top = `${y}px`;
+      k.style.left = x + "px";
+      k.style.top = y + "px";
 
-      const ttl = setTimeout(() => {
+      const ttl = setTimeout(function(){
         k.remove();
         showToast("The kiss got shy 😳");
       }, 4000);
 
-      k.addEventListener("click", () => {
+      k.addEventListener("click", function(){
         clearTimeout(ttl);
         kisses += 1;
         kissesEl.textContent = String(kisses);
@@ -459,34 +478,37 @@ HTML = """<!DOCTYPE html>
       document.body.appendChild(k);
     }
 
-    function tinyConfetti() {
+    function tinyConfetti(){
       const burst = ["✨", "💖", "💗", "🌸", "💞", "🎀"];
       const cx = window.innerWidth / 2;
       const cy = window.innerHeight / 2;
 
-      for (let i = 0; i < 40; i++) {
-        setTimeout(() => {
+      for (let i = 0; i < 40; i++){
+        setTimeout(function(){
           popEmoji(cx + rand(-180, 180), cy + rand(-140, 140), burst[Math.floor(rand(0, burst.length))]);
         }, i * 18);
       }
       showToast("Yayyy 💞");
     }
 
-    async function copySweetMessage() {
-      const msg = `Hey ${GIRL_NAME} 💗\\n\\n${NOTE_TEXT}\\n\\n— from me 🧸`;
-      try {
-        await navigator.clipboard.writeText(msg);
-        showToast("Copied! Send it to her 💌");
-      } catch {
-        showToast("Copy failed 😅 (browser blocked it)");
+    function copySweetMessage(){
+      const msg = "Hey " + GIRL_NAME + " 💗\n\n" + NOTE_TEXT + "\n\n— from me 🧸";
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(msg).then(function(){
+          showToast("Copied! Send it to her 💌");
+        }).catch(function(){
+          showToast("Copy blocked 😅");
+        });
+      } else {
+        showToast("Copy not supported 😅");
       }
     }
 
-    function toggleMusic() {
+    function toggleMusic(){
       musicOn = !musicOn;
-      if (musicOn) {
+      if (musicOn){
         bgm.volume = 0.35;
-        bgm.play().catch(() => {
+        bgm.play().catch(function(){
           showToast("Tap once, then press ♪ again 💗");
           musicOn = false;
         });
@@ -500,11 +522,11 @@ HTML = """<!DOCTYPE html>
     const unlockBtn = el("unlockBtn");
     const pwdInput = el("pwd");
 
-    function normalize(s) {
+    function normalize(s){
       return String(s || "").trim().toLowerCase();
     }
 
-    function wrongPasswordFeedback() {
+    function wrongPasswordFeedback(){
       const card = modal.querySelector(".modal-card");
       card.classList.remove("shake");
       void card.offsetWidth;
@@ -514,66 +536,71 @@ HTML = """<!DOCTYPE html>
       sprinkleLove(window.innerWidth/2, window.innerHeight/2);
     }
 
-    function unlockNow() {
-      const attempt = normalize(pwdInput.value);
-      if (attempt === normalize(SECRET_PASSWORD)) {
+    function unlockNow(){
+      const attempt = normalize(pwdInput ? pwdInput.value : "");
+      if (attempt === normalize(SECRET_PASSWORD)){
         el("noteArea").hidden = false;
         el("pwdHint").textContent = "Unlocked ✅ you’re so cute 💗";
         showToast("Unlocked! 💞");
 
         tinyConfetti();
         teddy.classList.add("kiss");
-        setTimeout(() => teddy.classList.remove("kiss"), 260);
+        setTimeout(function(){ teddy.classList.remove("kiss"); }, 260);
       } else {
-        el("pwdHint").textContent = "Hint: it’s the nickname I call you 😌";
+        el("pwdHint").textContent = "Nope 😏 try the one that makes you blush";
         wrongPasswordFeedback();
       }
     }
 
-    // Personalize content
+    // Fallback if GIF fails
+    teddy.addEventListener("error", function(){
+      teddy.src = "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif";
+    }, { once: true });
+
+    // Personalize
     setTextSafe(herName, GIRL_NAME);
     setTextSafe(herName2, GIRL_NAME);
     setTextSafe(noteText, NOTE_TEXT);
 
-    // Tap anywhere for hearts/sparkles (avoid buttons)
-    window.addEventListener("pointerdown", (e) => {
-      if (e.target.closest("button") || e.target.closest("input")) return;
+    // Tap anywhere for hearts/sparkles (avoid buttons/inputs)
+    window.addEventListener("pointerdown", function(e){
+      if (e.target && (e.target.closest("button") || e.target.closest("input"))) return;
       sprinkleLove(e.clientX, e.clientY);
     });
 
     // Teddy interactions
-    teddy.addEventListener("click", (e) => {
+    teddy.addEventListener("click", function(e){
       teddy.classList.add("kiss");
       sprinkleLove(e.clientX, e.clientY);
       showToast("Teddy sent you a kiss 😘");
-      setTimeout(() => teddy.classList.remove("kiss"), 260);
+      setTimeout(function(){ teddy.classList.remove("kiss"); }, 260);
     });
-    teddy.addEventListener("mouseenter", () => teddy.classList.add("shy"));
-    teddy.addEventListener("mouseleave", () => teddy.classList.remove("shy"));
+    teddy.addEventListener("mouseenter", function(){ teddy.classList.add("shy"); });
+    teddy.addEventListener("mouseleave", function(){ teddy.classList.remove("shy"); });
 
     // Buttons
     el("openNote").addEventListener("click", openModal);
     el("closeModal").addEventListener("click", closeModal);
-    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+    modal.addEventListener("click", function(e){ if (e.target === modal) closeModal(); });
 
-    el("catchKiss").addEventListener("click", () => {
+    el("catchKiss").addEventListener("click", function(){
       spawnKiss();
       showToast("Catch it fast! 💋");
     });
 
-    const confBtn = el("confetti"); if (confBtn) confBtn.addEventListener("click", tinyConfetti);
-    const copyBtn = el("copyMsg"); if (copyBtn) copyBtn.addEventListener("click", copySweetMessage);
+    el("confetti").addEventListener("click", tinyConfetti);
+    el("copyMsg").addEventListener("click", copySweetMessage);
 
-    el("shareTip").addEventListener("click", () => {
-      showToast("Deploy this Flask app & share the URL 💗");
+    el("shareTip").addEventListener("click", function(){
+      showToast("Share the URL with your Meow 😼💗");
     });
 
     musicBtn.addEventListener("click", toggleMusic);
 
     unlockBtn.addEventListener("click", unlockNow);
-    pwdInput.addEventListener("keydown", (e) => { if (e.key === "Enter") unlockNow(); });
+    pwdInput.addEventListener("keydown", function(e){ if (e.key === "Enter") unlockNow(); });
 
-    setTimeout(() => showToast("Tap anywhere ✨"), 700);
+    setTimeout(function(){ showToast("Tap anywhere ✨"); }, 700);
   </script>
 </body>
 </html>
@@ -581,9 +608,14 @@ HTML = """<!DOCTYPE html>
 
 @app.get("/")
 def home():
-    return Response(HTML, mimetype="text/html")
+    # Inject values safely as JSON so quotes/newlines never break JS.
+    html = HTML_TEMPLATE
+    html = html.replace("__GIRL_NAME__", json.dumps(GIRL_NAME))
+    html = html.replace("__SECRET_PASSWORD__", json.dumps(SECRET_PASSWORD))
+    html = html.replace("__NOTE_TEXT__", json.dumps(NOTE_TEXT))
+    html = html.replace("__TEDDY_GIF__", TEDDY_GIF_URL)
+    return Response(html, mimetype="text/html")
 
 if __name__ == "__main__":
-    # For deployment platforms, use: gunicorn app:app
     port = int(os.environ.get("PORT", "5000"))
     app.run(host="0.0.0.0", port=port, debug=True)
