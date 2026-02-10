@@ -421,7 +421,7 @@ HTML = """<!DOCTYPE html>
     , 2000);
 
   showToast("Say the magic nickname… 🔒");
-  setTimeout(() => pwd?.focus?.(), 50);
+  setTimeout(() => { if (pwd && typeof pwd.focus === 'function') pwd.focus(); }, 50);
 }
 
 
@@ -561,8 +561,8 @@ HTML = """<!DOCTYPE html>
       showToast("Catch it fast! 💋");
     });
 
-    el("confetti")?.addEventListener("click", tinyConfetti);
-    el("copyMsg")?.addEventListener("click", copySweetMessage);
+    const confBtn = el("confetti"); if (confBtn) confBtn.addEventListener("click", tinyConfetti);
+    const copyBtn = el("copyMsg"); if (copyBtn) copyBtn.addEventListener("click", copySweetMessage);
 
     el("shareTip").addEventListener("click", () => {
       showToast("Deploy this Flask app & share the URL 💗");
